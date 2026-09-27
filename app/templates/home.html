@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% block content %}
+<section class="card"><h1>Arkadaşlarını puanla</h1>
+{% if poll %}<p class="progress">{{ done }}/{{ count }} kişi tamamladı</p>
+{% if poll.revealed %}<p>Sonuçlar açıklandı. Giriş yaptıktan sonra görebilirsin.</p>{% else %}<p>Herkes oy verdiğinde sonuçlar açıklanabilir. Oylar gönderildikten sonra değiştirilemez.</p>{% endif %}
+{% if poll.revealed and (request.session.get('admin') or request.session.get('poll_id') == poll.id) %}<p><a class="button" href="/results">Sonuçları gör</a></p>{% endif %}
+<form method="post" action="/login"><input type="hidden" name="csrf" value="{{ csrf }}"><label for="person">Adın</label><select id="person" name="person" required><option value="">Seç</option>{% for p in people %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select><label for="code">Giriş kodun</label><input id="code" name="code" type="password" autocomplete="off" required><button type="submit">Giriş yap</button></form>
+{% else %}<p>Henüz aktif oylama yok.</p>{% endif %}</section>
+{% if request.session.get('voter_id') or admin %}<form class="logout" method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="quiet">Çıkış yap</button></form>{% endif %}
+{% endblock %}

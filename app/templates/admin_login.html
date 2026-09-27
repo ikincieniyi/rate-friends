@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<section class="card narrow"><h1>Yönetici girişi</h1><form method="post" action="/admin/login"><input type="hidden" name="csrf" value="{{ csrf }}"><label for="password">Parola</label><input id="password" name="password" type="password" autocomplete="current-password" required><button>Giriş yap</button></form></section>{% endblock %}
