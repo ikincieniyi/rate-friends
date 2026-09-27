@@ -66,7 +66,9 @@ curl -I https://ALAN_ADI/
 
 DNS ve 80/443 erişimi çalışıyorsa Caddy HTTPS sertifikasını yönetir. HTTP üzerinden üretim oturum çerezi kullanılmamalıdır.
 
-Üretim servisinde erişim logu kapalıdır; kodlar URL'ye yazılmaz. Başlangıç kodlarını yönetici yalnızca oluşturma ekranında bir kez görür; güvenli kanaldan ayrı ayrı iletmelidir. Kod kaybolursa mevcut katılımcı için kurtarma yoktur. Aktif oylama bitip sonuçlar açıklandıktan sonra yeni oylama oluşturulabilir; eski sonuçlar SQLite'ta kalır, web arayüzü yalnızca aktif oylamayı gösterir.
+Üretim servisinde erişim logu kapalıdır; kodlar URL'ye yazılmaz. Başlangıç kodlarını yönetici yalnızca oluşturma ekranında bir kez görür; güvenli kanaldan ayrı ayrı iletmelidir. Aktif oylama bitip sonuçlar açıklandıktan sonra yeni oylama oluşturulabilir; eski sonuçlar SQLite'ta kalır, web arayüzü yalnızca aktif oylamayı gösterir.
+
+Yönetici, katılımcı listesindeki **Kodu yenile** ile kaybolan kodun yerine yeni kod üretebilir. Eski kod ve açık katılımcı oturumları geçersiz olur; verilen oy ve tamamlanma durumu korunur. Yeni kod yalnızca işlem sonrasında bir kez gösterilir. **Bu oylamayı sil…** bağlantısı oylamanın adını yazmayı isteyen ayrı bir onay sayfası açar. Silme geri alınamaz; o oylamanın katılımcıları, kod özetleri ve puan toplamları silinir. Ardından normal yönetim ekranından yeni oylama oluşturulabilir.
 
 ## Yedek
 

@@ -1,0 +1,16 @@
+.score-field{border:0;padding:0;margin:1.2rem 0 1.5rem;min-width:0}
+.score-field legend{font-weight:700;padding:0;margin-bottom:.5rem}
+.score-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.4rem}
+.score-option{position:relative;display:block;margin:0;cursor:pointer}
+.score-option input{position:absolute;width:1px;height:1px;opacity:0}
+.score-option span{display:grid;place-items:center;min-height:48px;border:2px solid #8fa3ae;border-radius:8px;background:#fff;color:#17394b;font-size:1rem;font-weight:750}
+.score-option:hover span{border-color:#086b86}
+.score-option input:checked+span{background:#086b86;border-color:#086b86;color:#fff}
+.score-option input:focus-visible+span{outline:3px solid #ffab33;outline-offset:2px}
+.participant-list{list-style:none;padding:0}
+.participant-list li{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid #e7edf0;padding:.3rem 0}
+.participant-list button{margin:.25rem 0}
+.danger-link{color:#9b2323;font-weight:700}
+.danger{background:#a92727}
+.danger:hover{background:#841d1d}
+@media(min-width:700px){.score-options{grid-template-columns:repeat(10,minmax(0,1fr))}}

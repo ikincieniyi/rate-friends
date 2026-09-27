@@ -40,7 +40,11 @@ def require_admin(request: Request):
         raise HTTPException(403, "Yönetici girişi gerekli.")
 
 
-def voter_id(request: Request, poll_id):
+def voter_id(request: Request, poll_id, db):
     if request.session.get("poll_id") != poll_id or not isinstance(request.session.get("voter_id"), int):
         raise HTTPException(403, "Katılımcı girişi gerekli.")
-    return request.session["voter_id"]
+    person_id = request.session["voter_id"]
+    person = db.execute("SELECT auth_tag FROM participants WHERE id=? AND poll_id=?", (person_id, poll_id)).fetchone()
+    if not person or not secrets.compare_digest(person["auth_tag"], request.session.get("auth_tag", "")):
+        raise HTTPException(403, "Katılımcı girişi yenilenmeli.")
+    return person_id

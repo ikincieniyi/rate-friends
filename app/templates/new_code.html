@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card narrow">
+  <h1>Yeni giriş kodu</h1>
+  <p><strong>{{ name }}</strong> için eski kod artık geçersiz. Yeni kod yalnızca bu sayfada gösterilir; güvenli biçimde kopyalayıp katılımcıya iletin.</p>
+  <label for="new-code">Yeni kod</label>
+  <input id="new-code" value="{{ code }}" readonly autocomplete="off">
+  <button type="button" onclick="copyCode()">Kodu kopyala</button>
+  <p id="copy-status" role="status"></p>
+  <p><a href="/admin">Yönetime dön</a></p>
+</section>
+<script>async function copyCode(){const el=document.getElementById('new-code');try{await navigator.clipboard.writeText(el.value);document.getElementById('copy-status').textContent='Kopyalandı.'}catch(e){el.select();document.getElementById('copy-status').textContent='Kod seçildi; elle kopyalayın.'}}</script>
+{% endblock %}

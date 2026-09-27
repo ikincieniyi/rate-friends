@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card narrow">
+  <h1>Oylamayı sil</h1>
+  <p><strong>{{ poll.name }}</strong> adlı oylama; katılımcılar, giriş kodu özetleri, tamamlanma durumları ve puan toplamlarıyla birlikte kalıcı olarak silinecek. <strong>Bu işlem geri alınamaz.</strong></p>
+  <form method="post" action="/admin/delete">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="hidden" name="poll_id" value="{{ poll.id }}">
+    <input type="hidden" name="poll_token" value="{{ poll.poll_token }}">
+    <label for="confirm_name">Onaylamak için oylama adını aynen yazın</label>
+    <input id="confirm_name" name="confirm_name" autocomplete="off" required>
+    <button class="danger" type="submit">Kalıcı olarak sil</button>
+  </form>
+  <p><a href="/admin">Vazgeç</a></p>
+</section>
+{% endblock %}

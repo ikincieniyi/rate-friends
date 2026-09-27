@@ -1,6 +1,5 @@
 import hashlib
 import secrets
-import sqlite3
 
 from .db import transaction
 
@@ -35,9 +34,12 @@ def progress(db, poll_id):
     return row["done"], row["n"]
 
 
-def create_poll(db, names_raw, categories_raw, mode):
+def create_poll(db, names_raw, categories_raw, mode, name="Oylama"):
     names = lines(names_raw, 2, 200, "Katılımcılar")
     categories = lines(categories_raw, 1, 30, "Başlıklar")
+    name = name.strip() if isinstance(name, str) else ""
+    if not 1 <= len(name) <= 80 or any(ord(ch) < 32 for ch in name):
+        raise ValueError("Oylama adı 1–80 karakter olmalı.")
     if mode not in ("manual", "automatic"):
         raise ValueError("Geçersiz açıklama modu.")
     codes = [(name, secrets.token_urlsafe(24)) for name in names]
@@ -48,13 +50,41 @@ def create_poll(db, names_raw, categories_raw, mode):
             if not prior["revealed"] or done != count:
                 raise ValueError("Aktif oylama bitmeden yenisi oluşturulamaz.")
             db.execute("UPDATE polls SET active=0 WHERE id=?", (prior["id"],))
-        poll_id = db.execute("INSERT INTO polls(mode) VALUES(?)", (mode,)).lastrowid
-        for name, code in codes:
-            db.execute("INSERT INTO participants(poll_id,name,code_hash) VALUES(?,?,?)", (poll_id, name, hash_code(code)))
+        poll_id = db.execute("INSERT INTO polls(name,poll_token,mode) VALUES(?,?,?)", (name, secrets.token_urlsafe(24), mode)).lastrowid
+        for person_name, code in codes:
+            db.execute("INSERT INTO participants(poll_id,name,code_hash,auth_tag) VALUES(?,?,?,?)", (poll_id, person_name, hash_code(code), secrets.token_urlsafe(24)))
         for position, name in enumerate(categories):
             db.execute("INSERT INTO categories(poll_id,name,position) VALUES(?,?,?)", (poll_id, name, position))
         db.execute("INSERT INTO totals(poll_id,target_id,category_id) SELECT ?,p.id,c.id FROM participants p CROSS JOIN categories c WHERE p.poll_id=? AND c.poll_id=?", (poll_id, poll_id, poll_id))
     return poll_id, codes
+
+
+def delete_poll(db, poll_id, name, poll_token):
+    if not isinstance(name, str) or not isinstance(poll_token, str):
+        raise ValueError("Oylama onayı geçersiz.")
+    with transaction(db):
+        poll = active_poll(db)
+        if not poll or poll["id"] != poll_id or poll["name"] != name or not secrets.compare_digest(poll["poll_token"], poll_token):
+            raise ValueError("Oylama onayı geçersiz veya oylama değişti.")
+        db.execute("DELETE FROM totals WHERE poll_id=?", (poll_id,))
+        db.execute("DELETE FROM participants WHERE poll_id=?", (poll_id,))
+        db.execute("DELETE FROM categories WHERE poll_id=?", (poll_id,))
+        db.execute("DELETE FROM polls WHERE id=?", (poll_id,))
+
+
+def rotate_code(db, poll_id, person_id, poll_token):
+    if not isinstance(poll_token, str):
+        raise ValueError("Oylama değişti.")
+    code = secrets.token_urlsafe(24)
+    with transaction(db):
+        poll = active_poll(db)
+        if not poll or poll["id"] != poll_id or not secrets.compare_digest(poll["poll_token"], poll_token):
+            raise ValueError("Aktif oylama bulunamadı.")
+        person = db.execute("SELECT name FROM participants WHERE id=? AND poll_id=?", (person_id, poll_id)).fetchone()
+        if not person:
+            raise ValueError("Katılımcı bulunamadı.")
+        db.execute("UPDATE participants SET code_hash=?, auth_tag=? WHERE id=?", (hash_code(code), secrets.token_urlsafe(24), person_id))
+    return person["name"], code
 
 
 def authenticate_participant(db, poll_id, participant_id, code):
@@ -89,11 +119,11 @@ def validate_scores(db, poll_id, voter_id, form):
     return scores
 
 
-def submit_vote(db, poll_id, voter_id, scores):
+def submit_vote(db, poll_id, voter_id, scores, expected_auth_tag=None):
     with transaction(db):
         poll = active_poll(db)
-        voter = db.execute("SELECT completed FROM participants WHERE id=? AND poll_id=?", (voter_id, poll_id)).fetchone()
-        if not poll or poll["id"] != poll_id or poll["revealed"] or not voter or voter["completed"]:
+        voter = db.execute("SELECT completed,auth_tag FROM participants WHERE id=? AND poll_id=?", (voter_id, poll_id)).fetchone()
+        if not poll or poll["id"] != poll_id or poll["revealed"] or not voter or voter["completed"] or (expected_auth_tag is not None and not secrets.compare_digest(voter["auth_tag"], expected_auth_tag)):
             raise InvalidVote("Bu oy artık gönderilemez.")
         expected = {(p["id"], c["id"]) for p in db.execute("SELECT id FROM participants WHERE poll_id=? AND id<>?", (poll_id, voter_id)) for c in db.execute("SELECT id FROM categories WHERE poll_id=?", (poll_id,))}
         if set(scores) != expected or any(type(score) is not int or not 1 <= score <= 10 for score in scores.values()):

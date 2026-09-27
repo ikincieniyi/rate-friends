@@ -1,3 +1,3 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{% block title %}Arkadaş Puanlama{% endblock %}</title><link rel="stylesheet" href="/static/style.css"></head>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{% block title %}Arkadaş Puanlama{% endblock %}</title><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/controls.css"></head>
 <body><header><a class="brand" href="/">Arkadaş Puanlama</a><nav>{% if admin %}<a href="/admin">Yönetim</a>{% else %}<a href="/admin/login">Yönetici</a>{% endif %}</nav></header><main>{% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}{% block content %}{% endblock %}</main><footer>Her başlıkta 1 az, 10 çok. Küçük gruplarda ortalamalardan çıkarım yapılabilir.</footer></body></html>

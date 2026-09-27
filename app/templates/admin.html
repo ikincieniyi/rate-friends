@@ -1,6 +1,46 @@
-{% extends 'base.html' %}{% block content %}<section class="card"><h1>Yönetim</h1>
-{% if poll %}<p class="progress">{{ done }}/{{ count }} kişi tamamladı</p><p>Mod: {{ 'Otomatik' if poll.mode == 'automatic' else 'Manuel' }}</p>
-{% if poll.revealed %}<p>Sonuçlar açıklandı.</p><a class="button" href="/results">Sonuçları gör</a>{% else %}<p>Oy durumu kişi bazında gösterilmez.</p>{% if poll.mode == 'manual' and done == count %}<form method="post" action="/admin/reveal"><input type="hidden" name="csrf" value="{{ csrf }}"><button>Sonuçları açıkla</button></form>{% endif %}{% endif %}
-{% if poll.revealed %}<hr><h2>Yeni oylama</h2><p>Önceki sonuçlar veritabanında saklanır. Yeni oylama aktif olur.</p>{% endif %}
-{% endif %}
-{% if not poll or poll.revealed %}<form method="post" action="/admin/create"><input type="hidden" name="csrf" value="{{ csrf }}"><label for="names">Katılımcılar — her satıra bir ad</label><textarea id="names" name="names" rows="7" required>{{ names or '' }}</textarea><label for="categories">Başlıklar — her satıra bir başlık</label><textarea id="categories" name="categories" rows="10" required>{{ defaults }}</textarea><fieldset><legend>Sonuç açıklama modu</legend><label class="radio"><input type="radio" name="mode" value="manual" checked> Manuel: herkes tamamladıktan sonra ben açıklarım</label><label class="radio"><input type="radio" name="mode" value="automatic"> Otomatik: son oyla açılır</label></fieldset><button>Oylama oluştur</button></form>{% endif %}</section><form class="logout" method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="quiet">Çıkış yap</button></form>{% endblock %}
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <h1>Yönetim</h1>
+  {% if poll %}
+    <h2>{{ poll.name }}</h2>
+    <p class="progress">{{ done }}/{{ count }} kişi tamamladı</p>
+    <p>Mod: {{ 'Otomatik' if poll.mode == 'automatic' else 'Manuel' }}</p>
+    {% if poll.revealed %}
+      <p>Sonuçlar açıklandı.</p>
+      <a class="button" href="/results">Sonuçları gör</a>
+    {% else %}
+      <p>Oy durumu kişi bazında gösterilmez.</p>
+      {% if poll.mode == 'manual' and done == count %}
+        <form method="post" action="/admin/reveal">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button>Sonuçları açıkla</button>
+        </form>
+      {% endif %}
+    {% endif %}
+    <hr>
+    <h2>Katılımcılar</h2>
+    <p>Kaybolan kodu yenilerseniz eski kod ve o katılımcının açık oturumları geçersiz olur. Oy durumu değişmez.</p>
+    <ul class="participant-list">
+      {% for person in people %}
+      <li><span>{{ person.name }}</span><form method="post" action="/admin/rotate/{{ person.id }}"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="poll_id" value="{{ poll.id }}"><input type="hidden" name="poll_token" value="{{ poll.poll_token }}"><button class="quiet" type="submit">Kodu yenile</button></form></li>
+      {% endfor %}
+    </ul>
+    <p><a class="danger-link" href="/admin/delete">Bu oylamayı sil…</a></p>
+    {% if poll.revealed %}
+      <hr><h2>Yeni oylama</h2><p>Önceki sonuçlar veritabanında saklanır. Yeni oylama aktif olur.</p>
+    {% endif %}
+  {% endif %}
+  {% if not poll or poll.revealed %}
+    <form method="post" action="/admin/create">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label for="name">Oylama adı</label><input id="name" name="name" maxlength="80" value="{{ poll_name or '' }}" required>
+      <label for="names">Katılımcılar — her satıra bir ad</label><textarea id="names" name="names" rows="7" required>{{ names or '' }}</textarea>
+      <label for="categories">Başlıklar — her satıra bir başlık</label><textarea id="categories" name="categories" rows="10" required>{{ defaults }}</textarea>
+      <fieldset><legend>Sonuç açıklama modu</legend><label class="radio"><input type="radio" name="mode" value="manual" checked> Manuel: herkes tamamladıktan sonra ben açıklarım</label><label class="radio"><input type="radio" name="mode" value="automatic"> Otomatik: son oyla açılır</label></fieldset>
+      <button>Oylama oluştur</button>
+    </form>
+  {% endif %}
+</section>
+<form class="logout" method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="quiet">Çıkış yap</button></form>
+{% endblock %}
