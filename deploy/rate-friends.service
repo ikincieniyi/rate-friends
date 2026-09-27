@@ -1,0 +1,19 @@
+[Unit]
+Description=Rate Friends FastAPI
+After=network.target
+
+[Service]
+Type=simple
+User=ratefriends
+Group=ratefriends
+WorkingDirectory=/opt/rate-friends
+ExecStart=/bin/sh /opt/rate-friends/scripts/run-prod.sh
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/rate-friends/data
+
+[Install]
+WantedBy=multi-user.target
