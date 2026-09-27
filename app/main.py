@@ -90,7 +90,7 @@ def vote(request: Request):
 
 @app.post("/preview", response_class=HTMLResponse)
 async def preview(request: Request):
-    form = await request.form()
+    form = await request.form(max_fields=6005)
     check_csrf(request, form)
     with connect(DB_PATH) as db:
         poll = rules.active_poll(db)
@@ -110,14 +110,17 @@ async def preview(request: Request):
 
 @app.post("/submit")
 async def submit(request: Request):
-    form = await request.form()
+    form = await request.form(max_fields=6005)
     check_csrf(request, form)
     with connect(DB_PATH) as db:
         poll = rules.active_poll(db)
         if not poll:
             raise HTTPException(404)
         who = voter_id(request, poll["id"])
-        scores = rules.validate_scores(db, poll["id"], who, form)
+        try:
+            scores = rules.validate_scores(db, poll["id"], who, form)
+        except rules.InvalidVote as exc:
+            raise HTTPException(400, str(exc))
         try:
             rules.submit_vote(db, poll["id"], who, scores)
         except rules.InvalidVote as exc:

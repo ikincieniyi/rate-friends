@@ -125,4 +125,5 @@ def test_http_access_and_csrf(tmp_path, monkeypatch):
         token = client.get("/").text.split('name="csrf" value="')[1].split('"')[0]
         assert client.post("/login", data={"csrf": token, "person": people[0]["id"], "code": codes[0][1]}, follow_redirects=False).status_code == 303
         assert client.get("/vote").status_code == 200
+        assert client.post("/submit", data={"csrf": token}).status_code == 400
         assert client.get("/results", follow_redirects=False).status_code == 303

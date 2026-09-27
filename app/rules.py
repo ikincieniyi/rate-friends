@@ -58,6 +58,8 @@ def create_poll(db, names_raw, categories_raw, mode):
 
 
 def authenticate_participant(db, poll_id, participant_id, code):
+    if len(code) > 128:
+        return None
     row = db.execute("SELECT * FROM participants WHERE id=? AND poll_id=?", (participant_id, poll_id)).fetchone()
     if not row or not secrets.compare_digest(row["code_hash"], hash_code(code)):
         return None
