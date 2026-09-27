@@ -1,5 +1,6 @@
 .env
 .venv/
+.venv-py313/
 .deps/
 data-test/
 __pycache__/

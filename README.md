@@ -2,6 +2,16 @@
 
 FastAPI ve SQLite ile küçük, mobil öncelikli arkadaş oylaması. Katılımcılar kendileri dışındaki herkesi her başlıkta 1–10 puanlar. Sonuçlar yalnızca herkes tamamlayınca açıklanır. Kişi bazında oy durumu veya tekil puanlar web üzerinden gösterilmez. Gönderilen oy değiştirilemez. Küçük gruplarda ortalamalardan çıkarım yapılabileceği için mutlak anonimlik sözü verilmez.
 
+## Windows üzerinde yerel başlatma
+
+Python 3.13 kuruluysa proje kökünde PowerShell'den yalnızca şunu çalıştırın:
+
+```powershell
+.\run-local.cmd
+```
+
+İlk çalıştırmada `.venv-py313` sanal ortamı ve eksik bağımlılıklar hazırlanır; yönetici parolası gizli olarak sorulur. Yerel ayarlar ve veritabanı Git tarafından yok sayılan `data/` dizininde tutulur. Sonraki açılışlarda parola tekrar sorulmaz. Terminalde gösterilen `http://127.0.0.1:8000/` uygulama, `http://127.0.0.1:8000/admin/login` yönetici giriş adresidir. Sunucuyu Ctrl+C ile durdurun. Bu yerel kullanım içindir.
+
 ## Debian 13 üzerinde yerel başlatma
 
 Python 3, venv ve Git kurulu olmalı. Depoyu GitHub'a yükledikten sonra:
