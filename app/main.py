@@ -12,6 +12,7 @@ from . import rules
 from .auth import check_csrf, csrf_token, limited, require_admin, voter_id
 from .config import settings
 from .db import connect, init
+from .results_view import result_cards
 
 ADMIN_PASSWORD, SESSION_SECRET, DB_PATH, COOKIE_SECURE = settings()
 
@@ -140,10 +141,7 @@ def results(request: Request):
         if not poll["revealed"]:
             return redirect("/")
         rows, expected = rules.results(db, poll["id"])
-        grouped = {}
-        for row in rows:
-            grouped.setdefault(row["person"], []).append((row["category"], f'{row["score_sum"] / row["vote_count"]:.2f}'))
-        return page(request, "results.html", grouped=grouped, expected=expected)
+        return page(request, "results.html", cards=result_cards(rows), expected=expected)
 
 
 @app.get("/admin/login", response_class=HTMLResponse)

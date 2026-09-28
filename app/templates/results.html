@@ -1,1 +1,62 @@
-{% extends 'base.html' %}{% block content %}<h1>Sonuçlar</h1><p>Her ortalama, kişinin kendisi dışındaki {{ expected }} katılımcının puanından hesaplandı. 1 az, 10 çok.</p>{% for person, items in grouped.items() %}<section class="card"><h2>{{ person }}</h2><dl>{% for category, average in items %}<dt>{{ category }}</dt><dd><strong>{{ average }}</strong> / 10</dd>{% endfor %}</dl></section>{% endfor %}{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Sonuçlar · Arkadaş Puanlama{% endblock %}
+{% block content %}
+<div class="results-intro">
+  <p class="results-eyebrow">Grubun değerlendirmesi</p>
+  <h1>Sonuçlar</h1>
+  <p>Her ortalama, kişinin kendisi dışındaki {{ expected }} katılımcının puanından hesaplandı. <strong>1 az, 10 çok.</strong></p>
+</div>
+{% for card in cards %}
+{% set card_id = 'result-' ~ loop.index %}
+<section class="card result-card" aria-labelledby="{{ card_id }}-name">
+  <div class="result-heading">
+    <h2 id="{{ card_id }}-name">{{ card.person }}</h2>
+    <span class="result-badge">{{ card['items']|length }} başlık</span>
+  </div>
+  <div class="result-layout{% if not card.radar %} result-layout-list{% endif %}">
+    {% if card.radar %}
+    <figure class="result-chart">
+      <svg class="radar" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" role="img" aria-labelledby="{{ card_id }}-title {{ card_id }}-desc">
+        <title id="{{ card_id }}-title">{{ card.person }} için ortalama puanlar</title>
+        <desc id="{{ card_id }}-desc">Merkez 1, dış halka 10 puandır. Eksen numaraları yanındaki başlık listesiyle eşleşir; gerçek ortalamalar listede iki ondalıkla gösterilir.</desc>
+        <g class="radar-grid">
+          {% for ring in card.radar.rings %}<polygon points="{{ ring.points }}" />{% endfor %}
+          {% for x, y in card.radar.axes %}<line x1="180" y1="180" x2="{{ x }}" y2="{{ y }}" />{% endfor %}
+        </g>
+        <polygon class="radar-area" points="{{ card.radar.points }}" />
+        {% for x, y in card.radar.dots %}
+        {% set item = card['items'][loop.index0] %}
+        <circle class="radar-dot" cx="{{ x }}" cy="{{ y }}" r="3.5"><title>{{ item.category }}: {{ item.label }} / 10</title></circle>
+        {% endfor %}
+        <g class="radar-scale" aria-hidden="true">
+          <text x="188" y="184">1</text>
+          {% for ring in card.radar.rings %}<text x="188" y="{{ ring.label_y }}">{{ ring.value }}</text>{% endfor %}
+        </g>
+        <g class="radar-labels" aria-hidden="true">
+          {% for x, y in card.radar.labels %}
+          <circle cx="{{ x }}" cy="{{ y }}" r="14" />
+          <text x="{{ x }}" y="{{ y }}" dy=".35em">{{ loop.index }}</text>
+          {% endfor %}
+        </g>
+      </svg>
+      <figcaption>Numaralar başlıklarla eşleşir.<br>Merkez <strong>1</strong> · Dış halka <strong>10</strong></figcaption>
+    </figure>
+    {% endif %}
+    <div class="result-details">
+      <p class="result-list-heading">Başlıklar ve ortalamalar <span>/ 10</span></p>
+      <dl class="result-scores">
+        {% for item in card['items'] %}
+        <div class="result-score">
+          <dt><span class="result-index" aria-hidden="true">{{ loop.index }}</span><span class="result-category">{{ item.category }}</span></dt>
+          <dd>
+            <strong>{{ item.label }}</strong><span class="result-unit"> / 10</span>
+            <span class="result-bar" aria-hidden="true"><span style="width: {{ item.bar_width }}%"></span></span>
+          </dd>
+        </div>
+        {% endfor %}
+      </dl>
+    </div>
+  </div>
+</section>
+{% endfor %}
+{% endblock %}
